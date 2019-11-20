@@ -1,0 +1,21 @@
+#At Most One Change Analysis for Changes In Water Storage in Wintergarden Region of TX
+#Data from NASA's GRACE Satellite
+#Not removing seasonality
+
+data = read.csv(‘Batseville_TX_Grace.csv’, header=TRUE)
+
+library(changepoint)
+
+#Create a Time Series
+ts_data = ts(data$Grace, frequency=12, start=c(2002,04))
+
+plot(ts_data)
+
+#Change Point Analysis Function
+Change_Point = cpt.mean(ts_data, penalty=”MBIC”, pen.value=0, method=”AMOC”, Q=5, test.stat=”Normal”, class=TRUE, param.estimates=TRUE, minseglen=1)
+
+#Show Changepoint Location
+Change_Point
+
+#Calculate Means
+param.est(Change_Point)
