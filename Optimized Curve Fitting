@@ -1,0 +1,94 @@
+#Python Script for Optimized Curve Fitting
+#Used for fitting current and surface temperature data of a solar panel.
+
+#Curve Fit to Theoretical Curve:
+# Description: Fits Temperature and Current data to Shockley Diode Equation
+# using nonlinear regression, then plots results.
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+
+data = pd.read_csv('Trial_3_Data.csv')
+data = data[0:12]
+
+# Plot temperature vs current
+data.plot.scatter(x='Temp in Kelvin', y='Current Measured (Amps)')
+plt.title('Current vs Temperature Data Against Theoretical')
+plt.xlabel('Temperature (Kelvin)')
+plt.ylabel('Current (Amps)')
+
+# Extract variables Current and Temperature
+T = data['Temp in Kelvin'].values
+I = data['Current Measured (Amps)'].values
+
+# Define Constants
+q_div_k = 1.16*10**4
+V = 2 #voltage
+
+# Define function to be fit
+# Constants to optimize: Is and n_inv (ie 1/n)
+def shockleydiode(T, Is, n_inv):
+return Is *( np.exp(q_div_k * n_inv * V/T) - 1 )
+
+# Nonlinear Regression using scipy scipy.optimize.curve_fit. Similar to example in
+# https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
+
+popt, pcov = curve_fit(shockleydiode, T, I, bounds=([0, 0.5], [10**(-20), 1] ) )
+# From Shockley Diode theory, n is a number between 1 and 2,
+# Is is a very small number greater than zero.
+
+plt.ylim(0,0.08)
+plt.xlim(370,425)
+
+
+Curve Fit with Added Constant to Theoretical Curve:
+# Description: Fits Temperature and Current data to Shockley Diode Equation with added constant
+# using nonlinear regression, then plots results.
+
+import numpy as np
+from scipy.optimize import curve_fit
+import pandas as pd
+import matplotlib.pyplot as plt
+
+data = pd.read_csv('Trial_3_Data.csv')
+data = data[0:12]
+
+# Plot temperature vs current data
+data.plot.scatter(x='Temp in Kelvin', y='Current Measured (Amps)')
+plt.title('Current vs Temperature Data against Theoretical Curve with Added Constant')
+plt.xlabel('Temperature (Kelvin)')
+plt.ylabel('Current (Amps)')
+
+# Extract variables Current and Temperature
+T = data['Temp in Kelvin'].values
+I = data['Current Measured (Amps)'].values
+
+# Define Constants
+q_div_k = 1.16*10**4
+V = 2 #voltage
+
+# Define function to be fit
+#Constants to optimize: Is and n_inv (ie 1/n)
+def shockleydiodeadjusted(T, Is, n_inv):
+return (Is *( np.exp(q_div_k * n_inv * V/T) - 1 ) +.04)
+
+# Nonlinear Regression using scipy scipy.optimize.curve_fit. Similar to example in
+#https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
+
+popt, pcov = curve_fit(shockleydiode, T, I, bounds=([0, 0.5], [10**(-20), 1] ) )
+# From Shockley Diode theory, n is a number between 1 and 2,
+# Is is a very small number greater than zero.
+
+#Show optimized values for Is and 1/n:
+popt
+
+#Plot Curve
+xdata = np.linspace(370, 425, 50)
+ydata = shockleydiodeadjust(xdata, popt[0], popt[1])
+plt.plot(xdata,ydata)
+
+#Adjust Bounds
+plt.ylim(0.03,.08)
+plt.xlim(370,425)
